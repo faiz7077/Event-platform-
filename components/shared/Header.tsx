@@ -19,7 +19,7 @@ return (
             </SignedIn>
             <div className="flex w-32  justify-end gap-3">
                 <SignedIn>
-                    <UserButton afterSignOut={'/'}/>    
+                    <UserButton afterSignOutUrl={'/'}/>    
                     <MobileNav/>
                 </SignedIn>
                 <SignedOut>

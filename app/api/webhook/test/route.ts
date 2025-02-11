@@ -4,11 +4,14 @@ import { headers } from 'next/headers'
 export async function POST(req: Request) {
   try {
     // Log all headers
-    const headersList = headers();
-    const allHeaders = {};
-    headersList.forEach((value, key) => {
+    const headersList = await headers();
+    const allHeaders: Record<string, string> = {};
+    
+    // Get all headers as entries
+    Array.from(headersList.entries()).forEach(([key, value]) => {
       allHeaders[key] = value;
     });
+    
     console.log('Headers received:', allHeaders);
 
     // Log body
@@ -23,7 +26,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Test webhook error:', error);
     return NextResponse.json({ 
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { 
       status: 500 
     })

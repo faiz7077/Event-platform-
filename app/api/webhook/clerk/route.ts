@@ -10,11 +10,11 @@ export async function POST(req: Request) {
     console.log('Webhook endpoint hit!');
 
     // Log raw headers for debugging
-    const headersList = headers();
-    const allHeaders = {};
-    headersList.forEach((value, key) => {
+    const headersList = await headers();
+    const allHeaders: Record<string, string> = {};
+    for (const [key, value] of headersList.entries()) {
       allHeaders[key] = value;
-    });
+    }
     console.log('Received headers:', allHeaders);
 
     const WEBHOOK_SECRET = process.env.NEXT_CLERK_WEBHOOK_SECRET;
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     console.error('Webhook handler error:', error);
-    return new Response(`Webhook error: ${error.message}`, { 
+    return new Response(`Webhook error: ${error instanceof Error ? error.message : 'Unknown error'}`, { 
       status: 500 
     });
   }
