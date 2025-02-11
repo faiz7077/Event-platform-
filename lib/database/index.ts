@@ -1,20 +1,43 @@
 import mongoose from 'mongoose';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-let cached = (global as any).mongoose || { conn: null, promise: null };
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+let cached = (global as any).mongoose as MongooseCache || {
+  conn: null,
+  promise: null
+};
+
+let isConnected = false;
 
 export const connectToDatabase = async () => {
-  if (cached.conn) return cached.conn;
+  mongoose.set('strictQuery', true);
 
-  if(!MONGODB_URI) throw new Error('MONGODB_URI is missing');
+  if (!process.env.MONGODB_URI) {
+    console.log('MONGODB_URI is not defined');
+    throw new Error('MONGODB_URI is not defined');
+  }
 
-  cached.promise = cached.promise || mongoose.connect(MONGODB_URI, {
-    dbName: 'evently',
-    bufferCommands: false,
-  })
+  if (isConnected) {
+    console.log('Using existing database connection');
+    return;
+  }
 
-  cached.conn = await cached.promise;
-
-  return cached.conn;
+  try {
+    console.log('Attempting to connect to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = true;
+    console.log('MongoDB connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw error;
+  }
 }

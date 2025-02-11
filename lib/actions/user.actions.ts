@@ -12,12 +12,38 @@ import { CreateUserParams, UpdateUserParams } from '@/types'
 
 export async function createUser(user: CreateUserParams) {
   try {
+    console.log('createUser called with data:', user);
+    
     await connectToDatabase()
+    console.log('Database connected');
 
+    const userExists = await User.findOne({
+      $or: [
+        { email: user.email },
+        { clerkId: user.clerkId }
+      ]
+    })
+    console.log('Existing user check result:', userExists);
+
+    if (userExists) {
+      console.log('User already exists:', userExists);
+      throw new Error('User already exists')
+    }
+
+    console.log('Attempting to create new user in database');
     const newUser = await User.create(user)
+    console.log('Database creation result:', newUser);
+    
+    if (!newUser) {
+      console.log('Failed to create user - newUser is null/undefined');
+      throw new Error('Failed to create user')
+    }
+
     return JSON.parse(JSON.stringify(newUser))
   } catch (error) {
-    handleError(error)
+    console.error('Error in createUser:', error);
+    console.error('Error stack:', error.stack);
+    throw error
   }
 }
 
