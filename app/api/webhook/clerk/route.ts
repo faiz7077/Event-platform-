@@ -59,19 +59,28 @@ export async function POST(req: Request) {
       clerkId: id,
       email: email_addresses[0].email_address,
       username: username!,
-      firstName: first_name,
-      lastName: last_name,
+      firstName: first_name ?? "",  // Convert null to empty string
+      lastName: last_name ?? "",
       photo: image_url,
     }
 
     const newUser = await createUser(user);
 
-    if(newUser) {
-      await clerkClient.users.updateUserMetadata(id, {
+    // if(newUser) {
+    //   await clerkClient.users.updateUserMetadata(id, {
+    //     publicMetadata: {
+    //       userId: newUser._id
+    //     }
+    //   })
+    // }
+
+    if (newUser) {
+      const clerk = await clerkClient(); // Await the function to get ClerkClient instance
+      await clerk.users.updateUserMetadata(newUser.clerkId, {
         publicMetadata: {
           userId: newUser._id
         }
-      })
+      });
     }
 
     return NextResponse.json({ message: 'OK', user: newUser })
@@ -81,8 +90,8 @@ export async function POST(req: Request) {
     const {id, image_url, first_name, last_name, username } = evt.data
 
     const user = {
-      firstName: first_name,
-      lastName: last_name,
+      firstName: first_name ?? "",  // Convert null to empty string
+  lastName: last_name ?? "",
       username: username!,
       photo: image_url,
     }
